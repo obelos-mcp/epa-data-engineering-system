@@ -1,0 +1,15 @@
+{
+  "root": "website",
+  "clean_urls": true,
+  "routes": {
+    "/": "genesis.html",
+    "/project-overview": "genesis.html",
+    "/system-architecture": "pages/architecture.html",
+    "/interactive-dashboard": "pages/dashboard.html"
+  },
+  "headers": {
+    "/**": {
+      "Cache-Control": "public, max-age=3600"
+    }
+  }
+}
