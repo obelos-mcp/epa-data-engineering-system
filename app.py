@@ -10,7 +10,7 @@ def index():
 
 @app.route('/genesis')
 def genesis():
-    return send_from_directory('website', 'genesis.html')
+    return redirect(url_for('index'))
 
 @app.route('/project-overview')
 def project_overview():
