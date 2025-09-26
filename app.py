@@ -6,6 +6,10 @@ app = Flask(__name__)
 # Serve static files from website directory
 @app.route('/')
 def index():
+    return send_from_directory('website', 'index.html')
+
+@app.route('/genesis')
+def genesis():
     return send_from_directory('website', 'genesis.html')
 
 @app.route('/project-overview')
@@ -13,12 +17,31 @@ def project_overview():
     return redirect(url_for('index'))
 
 @app.route('/system-architecture')
+@app.route('/architecture')
 def system_architecture():
     return send_from_directory('website/pages', 'architecture.html')
 
 @app.route('/interactive-dashboard')
+@app.route('/dashboard')
 def interactive_dashboard():
     return send_from_directory('website/pages', 'dashboard.html')
+
+# Add routes for missing pages - redirect to main page for now
+@app.route('/data-strategy')
+def data_strategy():
+    return redirect(url_for('index'))
+
+@app.route('/etl-pipeline')
+def etl_pipeline():
+    return redirect(url_for('index'))
+
+@app.route('/quality-assurance')
+def quality_assurance():
+    return redirect(url_for('index'))
+
+@app.route('/performance')
+def performance():
+    return redirect(url_for('index'))
 
 # Serve static assets
 @app.route('/assets/<path:filename>')
