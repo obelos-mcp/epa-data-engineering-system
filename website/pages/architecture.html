@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Data Engineering Architecture | EPA Environmental Data Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/modern.css">
+    <link rel="stylesheet" href="../assets/css/environmental-theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Environmental Light Theme Variables for Architecture */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f0fdf4;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --env-primary: #10b981;
+            --env-secondary: #059669;
+            --env-accent: #34d399;
+            --env-blue: #0891b2;
+            --env-dark-green: #064e3b;
+            --env-light-green: #065f46;
+            --env-forest: #047857;
+            --env-ocean: #0e7490;
+            --accent-blue: #0891b2;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(16, 185, 129, 0.1);
+            --glow-blue: rgba(8, 145, 178, 0.3);
+            --glow-green: rgba(16, 185, 129, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .logo-icon {
+            color: var(--env-primary);
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--env-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--env-primary);
+            border-radius: 1px;
+        }
+
+        /* Main Container */
+        .main-container {
+            margin-top: 80px;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f7fdf9 0%, #e9f9f0 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--env-blue), var(--env-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #111827;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Pipeline Container */
+        .pipeline-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+
+        /* Pipeline Layer */
+        .pipeline-layer {
+            margin-bottom: 4rem;
+            position: relative;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .layer-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .layer-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .layer-description {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Component Grid */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Component Card */
+        .component-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .component-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--env-blue), var(--env-primary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .component-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .component-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--env-primary);
+            box-shadow: 0 20px 40px var(--shadow-color);
+        }
+
+        .component-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            color: var(--env-blue);
+            transition: color 0.3s ease;
+        }
+
+        .component-card:hover .component-icon {
+            color: var(--env-primary);
+        }
+
+        .component-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .component-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .component-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .metric-item {
+            background: var(--bg-tertiary);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--env-primary);
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Data Flow Arrows */
+        .flow-arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .arrow-line {
+            width: 4px;
+            height: 60px;
+            background: linear-gradient(180deg, var(--env-blue), var(--env-primary));
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .arrow-line::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border: 8px solid transparent;
+            border-top-color: var(--env-primary);
+        }
+
+        .arrow-line::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--env-primary);
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: flowDown 2s infinite linear;
+        }
+
+        @keyframes flowDown {
+            0% { top: -10px; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { top: 60px; opacity: 0; }
+        }
+
+        /* Technology Badges */
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tech-badge {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Performance Overlay */
+        .performance-overlay {
+            position: fixed;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-width: 250px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .performance-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--env-primary);
+        }
+
+        .overlay-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .overlay-metric:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--env-primary);
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--glow-green); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Code Block Styling */
+        .code-block {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            color: var(--env-primary);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsiveness */
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .nav-toggle-line {
+            width: 25px;
+            height: 3px;
+            background: var(--text-primary);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: flex;
+            }
+
+            .nav-menu {
+                position: fixed;
+                top: 80px;
+                left: -100%;
+                width: 100%;
+                height: calc(100vh - 80px);
+                background: var(--bg-secondary);
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                padding-top: 2rem;
+                transition: left 0.3s ease;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .component-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .performance-overlay {
+                position: relative;
+                right: auto;
+                transform: none;
+                margin: 2rem 0;
+                opacity: 1;
+                pointer-events: all;
+            }
+        }
+    </style>
+</head>
+
+<body class="env-light-theme">
+    <!-- Header Navigation -->
+    <header class="header" id="header">
+        <nav class="navbar">
+            <a href="../genesis.html" class="logo">
+                <i class="fas fa-leaf logo-icon"></i>
+                <span>EPA Data System</span>
+            </a>
+            
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="../genesis.html" class="nav-link">Project Overview</a></li>
+                <li><a href="architecture.html" class="nav-link active">System Architecture</a></li>
+                <li><a href="dashboard.html" class="nav-link">Interactive Dashboard</a></li>
+            </ul>
+            
+            <button class="nav-toggle" id="nav-toggle">
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Enterprise Data Engineering Architecture</h1>
+            <p class="hero-subtitle">
+                Scalable ETL pipeline processing 2.5M+ EPA environmental records with intelligent quality assurance, 
+                achieving <strong>42% error reduction</strong> and <strong>37% performance improvement</strong> through 
+                automated workflow orchestration and memory-optimized processing architecture.
+            </p>
+        </section>
+
+        <!-- Pipeline Container -->
+        <div class="pipeline-container">
+            
+            <!-- Layer 1: Data Sources -->
+            <div class="pipeline-layer" data-layer="sources">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Data Sources Layer
+                    </h2>
+                    <p class="layer-description">
+                        Multi-format EPA environmental datasets totaling 3.6GB with 2.5M+ records from regulatory compliance systems
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="echo">
+                        <i class="fas fa-database component-icon"></i>
+                        <h3 class="component-title">EPA ECHO Database</h3>
+                        <p class="component-description">
+                            Enforcement & Compliance History Online - comprehensive facility compliance data with 133 standardized columns
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">1.9GB</span>
+                                <span class="metric-label">Data Size</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">1.8M</span>
+                                <span class="metric-label">Records</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">CSV</span>
+                            <span class="tech-badge">UTF-8</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="npdes">
+                        <i class="fas fa-tint component-icon"></i>
+                        <h3 class="component-title">NPDES Water Data</h3>
+                        <p class="component-description">
+                            National Pollutant Discharge Elimination System permits and discharge monitoring reports
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">800MB</span>
+                                <span class="metric-label">Data Size</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">450K</span>
+                                <span class="metric-label">Records</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">CSV</span>
+                            <span class="tech-badge">Latin-1</span>
+                            <span class="tech-badge">Water Quality</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="air">
+                        <i class="fas fa-wind component-icon"></i>
+                        <h3 class="component-title">Air Emissions Data</h3>
+                        <p class="component-description">
+                            Clean Air Act compliance monitoring and emission inventory reporting systems
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">900MB</span>
+                                <span class="metric-label">Data Size</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">250K</span>
+                                <span class="metric-label">Records</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Multiple CSV</span>
+                            <span class="tech-badge">Air Quality</span>
+                            <span class="tech-badge">Emissions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 2: Extract Engine -->
+            <div class="pipeline-layer" data-layer="extract">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Extract Engine
+                    </h2>
+                    <p class="layer-description">
+                        Memory-efficient CSV processing engine with multi-threading and intelligent chunking for optimal performance
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="csv-processor">
+                        <i class="fab fa-python component-icon"></i>
+                        <h3 class="component-title">Memory-Efficient CSV Processor</h3>
+                        <p class="component-description">
+                            Chunked pandas processing with configurable batch sizes (10K-75K records) and multi-encoding support
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">35K+</span>
+                                <span class="metric-label">Records/sec</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">&lt;2GB</span>
+                                <span class="metric-label">Peak Memory</span>
+                            </div>
+                        </div>
+                        <div class="code-block">
+                            <code># Chunked processing implementation
+for chunk in pd.read_csv(file, chunksize=50000):
+    processed_chunk = process_chunk(chunk)
+    yield processed_chunk</code>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Pandas</span>
+                            <span class="tech-badge">NumPy</span>
+                            <span class="tech-badge">Multi-threading</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="error-handling">
+                        <i class="fas fa-shield-alt component-icon"></i>
+                        <h3 class="component-title">Error Handling & Recovery</h3>
+                        <p class="component-description">
+                            Robust error detection with automatic retry mechanisms and detailed logging for data lineage tracking
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">99.1%</span>
+                                <span class="metric-label">Success Rate</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">3x</span>
+                                <span class="metric-label">Auto Retry</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Logging</span>
+                            <span class="tech-badge">Exception Handling</span>
+                            <span class="tech-badge">Recovery</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 3: Transform Engine -->
+            <div class="pipeline-layer" data-layer="transform">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Transform Engine
+                    </h2>
+                    <p class="layer-description">
+                        Advanced data standardization and quality engine with cross-dataset validation and business rule enforcement
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="standardization">
+                        <i class="fas fa-cogs component-icon"></i>
+                        <h3 class="component-title">Data Standardization Engine</h3>
+                        <p class="component-description">
+                            Column name normalization to snake_case, data type standardization, and cross-field validation rules
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">133</span>
+                                <span class="metric-label">ECHO Columns</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">42%</span>
+                                <span class="metric-label">Error Reduction</span>
+                            </div>
+                        </div>
+                        <div class="code-block">
+                            <code># Column standardization
+df.columns = [col.lower().replace(' ', '_') 
+              for col in df.columns]</code>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Regex Processing</span>
+                            <span class="tech-badge">Data Cleaning</span>
+                            <span class="tech-badge">Normalization</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="business-rules">
+                        <i class="fas fa-brain component-icon"></i>
+                        <h3 class="component-title">Business Logic Engine</h3>
+                        <p class="component-description">
+                            EPA regulatory compliance rules, facility name cleaning algorithms, and geographic coordinate validation
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">15+</span>
+                                <span class="metric-label">Rule Types</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">95.8%</span>
+                                <span class="metric-label">Quality Score</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">EPA Standards</span>
+                            <span class="tech-badge">Validation Rules</span>
+                            <span class="tech-badge">Compliance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 4: QA/QC Automation -->
+            <div class="pipeline-layer" data-layer="qaqc">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        QA/QC Automation Engine
+                    </h2>
+                    <p class="layer-description">
+                        EPA standards-based validation framework with statistical anomaly detection and real-time quality scoring
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="validation">
+                        <i class="fas fa-check-circle component-icon"></i>
+                        <h3 class="component-title">EPA Standards Validation</h3>
+                        <p class="component-description">
+                            Comprehensive validation rules based on EPA data quality standards with coordinate bounds checking
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">15+</span>
+                                <span class="metric-label">Validation Rules</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">100%</span>
+                                <span class="metric-label">Coverage</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">EPA Standards</span>
+                            <span class="tech-badge">Coordinate Validation</span>
+                            <span class="tech-badge">Referential Integrity</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="anomaly-detection">
+                        <i class="fas fa-chart-line component-icon"></i>
+                        <h3 class="component-title">Statistical Anomaly Detection</h3>
+                        <p class="component-description">
+                            Advanced statistical methods including Z-score analysis and IQR-based outlier detection
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">Z-Score</span>
+                                <span class="metric-label">Method</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">IQR</span>
+                                <span class="metric-label">Outliers</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">SciPy</span>
+                            <span class="tech-badge">Statistical Analysis</span>
+                            <span class="tech-badge">Outlier Detection</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 5: Load Engine -->
+            <div class="pipeline-layer" data-layer="load">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Load Engine
+                    </h2>
+                    <p class="layer-description">
+                        High-performance PostgreSQL bulk operations with UPSERT logic and transaction management
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="bulk-operations">
+                        <i class="fas fa-database component-icon"></i>
+                        <h3 class="component-title">PostgreSQL Bulk Operations</h3>
+                        <p class="component-description">
+                            Optimized bulk insert operations with UPSERT logic for staging to core schema migration
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">30K+</span>
+                                <span class="metric-label">Rows/sec</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">ACID</span>
+                                <span class="metric-label">Compliance</span>
+                            </div>
+                        </div>
+                        <div class="code-block">
+                            <code># Bulk UPSERT operation
+INSERT INTO core_table SELECT * FROM staging_table
+ON CONFLICT (id) DO UPDATE SET ...</code>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">SQLAlchemy</span>
+                            <span class="tech-badge">Bulk Operations</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="transaction-mgmt">
+                        <i class="fas fa-sync component-icon"></i>
+                        <h3 class="component-title">Transaction Management</h3>
+                        <p class="component-description">
+                            Foreign key resolution, referential integrity enforcement, and atomic transaction processing
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">99.9%</span>
+                                <span class="metric-label">Uptime</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">ACID</span>
+                                <span class="metric-label">Properties</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Foreign Keys</span>
+                            <span class="tech-badge">Referential Integrity</span>
+                            <span class="tech-badge">Atomic Operations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 6: Database Layer -->
+            <div class="pipeline-layer" data-layer="database">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Database Architecture
+                    </h2>
+                    <p class="layer-description">
+                        Production-ready PostgreSQL data warehouse with staging and core schemas, audit trails, and performance optimization
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="staging-schema">
+                        <i class="fas fa-database component-icon"></i>
+                        <h3 class="component-title">Staging Schema</h3>
+                        <p class="component-description">
+                            Raw data ingestion layer with minimal constraints for initial data loading and validation
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">Raw</span>
+                                <span class="metric-label">Data Format</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">Minimal</span>
+                                <span class="metric-label">Constraints</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Raw Data</span>
+                            <span class="tech-badge">Fast Loading</span>
+                            <span class="tech-badge">Temporary Storage</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="core-schema">
+                        <i class="fas fa-check-double component-icon"></i>
+                        <h3 class="component-title">Core Schema</h3>
+                        <p class="component-description">
+                            Normalized, production-ready schema with full constraints, indexes, and referential integrity
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">Normalized</span>
+                                <span class="metric-label">Design</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">Full</span>
+                                <span class="metric-label">Constraints</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Production Ready</span>
+                            <span class="tech-badge">Indexed</span>
+                            <span class="tech-badge">Optimized</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="audit-system">
+                        <i class="fas fa-history component-icon"></i>
+                        <h3 class="component-title">Audit & Lineage System</h3>
+                        <p class="component-description">
+                            Complete data lineage tracking with audit tables for compliance and change management
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">100%</span>
+                                <span class="metric-label">Traceability</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">Full</span>
+                                <span class="metric-label">Lineage</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Data Lineage</span>
+                            <span class="tech-badge">Audit Trail</span>
+                            <span class="tech-badge">Compliance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Arrow -->
+            <div class="flow-arrow">
+                <div class="arrow-line"></div>
+            </div>
+
+            <!-- Layer 7: Orchestration & Monitoring -->
+            <div class="pipeline-layer" data-layer="orchestration">
+                <div class="layer-header">
+                    <h2 class="layer-title">
+                        <span class="status-indicator"></span>
+                        Orchestration & Monitoring
+                    </h2>
+                    <p class="layer-description">
+                        Automated workflow management with task dependencies, performance monitoring, and intelligent error recovery
+                    </p>
+                </div>
+                
+                <div class="component-grid">
+                    <div class="component-card" data-component="workflow-mgmt">
+                        <i class="fas fa-project-diagram component-icon"></i>
+                        <h3 class="component-title">Workflow Management</h3>
+                        <p class="component-description">
+                            Airflow-style task orchestration with dependencies, scheduling, and parallel execution capabilities
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">37%</span>
+                                <span class="metric-label">Faster Processing</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">Auto</span>
+                                <span class="metric-label">Scheduling</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Task Dependencies</span>
+                            <span class="tech-badge">Parallel Execution</span>
+                            <span class="tech-badge">Scheduling</span>
+                        </div>
+                    </div>
+
+                    <div class="component-card" data-component="monitoring">
+                        <i class="fas fa-chart-bar component-icon"></i>
+                        <h3 class="component-title">Performance Monitoring</h3>
+                        <p class="component-description">
+                            Real-time system health monitoring with alerting, resource utilization tracking, and performance optimization
+                        </p>
+                        <div class="component-metrics">
+                            <div class="metric-item">
+                                <span class="metric-value">Real-time</span>
+                                <span class="metric-label">Monitoring</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-value">24/7</span>
+                                <span class="metric-label">Alerting</span>
+                            </div>
+                        </div>
+                        <div class="tech-badges">
+                            <span class="tech-badge">System Health</span>
+                            <span class="tech-badge">Resource Tracking</span>
+                            <span class="tech-badge">Alerting</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Performance Overlay -->
+    <div class="performance-overlay" id="performance-overlay">
+        <h3 class="overlay-title">Pipeline Performance</h3>
+        <div class="overlay-metric">
+            <span>Processing Speed:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">35,000 rec/sec</span>
+        </div>
+        <div class="overlay-metric">
+            <span>Memory Usage:</span>
+            <span style="color: var(--accent-blue); font-weight: 700;">&lt;2GB peak</span>
+        </div>
+        <div class="overlay-metric">
+            <span>Success Rate:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">99.1%</span>
+        </div>
+        <div class="overlay-metric">
+            <span>Quality Score:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">95.8/100</span>
+        </div>
+        <div class="overlay-metric">
+            <span>Pipeline Uptime:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">99.9%</span>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('nav-toggle');
+            const navMenu = document.getElementById('nav-menu');
+            const performanceOverlay = document.getElementById('performance-overlay');
+
+            // Mobile navigation toggle
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    navToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+            }
+
+            // Component card interactions
+            const componentCards = document.querySelectorAll('.component-card');
+            componentCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const component = this.dataset.component;
+                    console.log(`Hovering over: ${component}`);
+                    
+                    // Show performance overlay on hover
+                    if (performanceOverlay) {
+                        performanceOverlay.classList.add('active');
+                    }
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    // Hide performance overlay when not hovering
+                    setTimeout(() => {
+                        if (performanceOverlay && !performanceOverlay.matches(':hover')) {
+                            performanceOverlay.classList.remove('active');
+                        }
+                    }, 100);
+                });
+
+                card.addEventListener('click', function() {
+                    const component = this.dataset.component;
+                    console.log(`Clicked on: ${component}`);
+                    
+                    // Add click animation
+                    this.style.transform = 'translateY(-12px) scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+
+            // Keep performance overlay visible when hovering over it
+            if (performanceOverlay) {
+                performanceOverlay.addEventListener('mouseenter', function() {
+                    this.classList.add('active');
+                });
+
+                performanceOverlay.addEventListener('mouseleave', function() {
+                    this.classList.remove('active');
+                });
+            }
+
+            // Animate pipeline layers on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationDelay = '0.2s';
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            const pipelineLayers = document.querySelectorAll('.pipeline-layer');
+            pipelineLayers.forEach(layer => {
+                layer.style.opacity = '0';
+                layer.style.transform = 'translateY(30px)';
+                layer.style.transition = 'all 0.8s ease-out';
+                observer.observe(layer);
+            });
+
+            // Header scroll effect
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    header.style.background = 'rgba(15, 15, 15, 0.98)';
+                } else {
+                    header.style.background = 'rgba(15, 15, 15, 0.95)';
+                }
+            });
+
+            console.log('Enterprise Data Engineering Architecture loaded successfully');
+        });
+    </script>
+</body>
+</html>

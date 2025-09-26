@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Dashboard | EPA Environmental Data Management System</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../assets/css/modern.css">
+    <link rel="stylesheet" href="../assets/css/environmental-theme.css">
+    
+    <style>
+        /* PowerBI-Style Dashboard Styles */
+        .dashboard-container {
+            display: grid;
+            grid-template-areas: 
+                "header header header"
+                "sidebar-left main-content sidebar-right"
+                "bottom-charts bottom-charts bottom-charts";
+            grid-template-columns: 280px 1fr 280px;
+            grid-template-rows: auto 1fr auto;
+            gap: var(--space-4);
+            padding: var(--space-4);
+            min-height: calc(100vh - var(--header-height));
+            background: #f1f5f9;
+        }
+        
+        .dashboard-header {
+            grid-area: header;
+            background: var(--white);
+            border-radius: var(--rounded-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-left { grid-area: sidebar-left; }
+        .main-content { grid-area: main-content; }
+        .sidebar-right { grid-area: sidebar-right; }
+        .bottom-charts { grid-area: bottom-charts; }
+        
+        .dashboard-card {
+            background: var(--white);
+            border-radius: var(--rounded-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: all var(--transition-normal);
+            margin-bottom: var(--space-4);
+        }
+        
+        .dashboard-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-3);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .card-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--gray-900);
+            margin: 0;
+        }
+        
+        /* Interactive Architecture Center */
+        .architecture-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: var(--space-6) 0;
+            position: relative;
+        }
+        
+        .flow-component {
+            background: var(--white);
+            border: 2px solid var(--gray-300);
+            border-radius: var(--rounded-xl);
+            padding: var(--space-4);
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+            min-width: 100px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .flow-component:hover {
+            border-color: var(--primary-500);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .flow-component.active {
+            border-color: var(--primary-500);
+            background: var(--primary-50);
+        }
+        
+        .flow-component-icon {
+            font-size: var(--text-xl);
+            color: var(--primary-500);
+            margin-bottom: var(--space-2);
+        }
+        
+        .flow-component-title {
+            font-size: var(--text-sm);
+            font-weight: var(--font-semibold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-1);
+        }
+        
+        .flow-component-status {
+            font-size: var(--text-xs);
+            color: var(--gray-600);
+        }
+        
+        .flow-arrow {
+            position: relative;
+            width: 30px;
+            height: 2px;
+            background: var(--gray-400);
+            margin: 0 var(--space-2);
+        }
+        
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            right: -4px;
+            top: -3px;
+            width: 0;
+            height: 0;
+            border: 4px solid transparent;
+            border-left-color: var(--gray-400);
+        }
+        
+        .flow-arrow.animated::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-500);
+            border-radius: 2px;
+            animation: flowAnimation 2s infinite linear;
+        }
+        
+        @keyframes flowAnimation {
+            0% { left: 0; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+        
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, var(--primary-50) 0%, var(--white) 100%);
+            border: 1px solid var(--primary-200);
+            border-radius: var(--rounded-lg);
+            padding: var(--space-3);
+            text-align: center;
+            position: relative;
+        }
+        
+        .kpi-value {
+            font-size: var(--text-xl);
+            font-weight: var(--font-extrabold);
+            color: var(--primary-600);
+            margin-bottom: var(--space-1);
+        }
+        
+        .kpi-label {
+            font-size: var(--text-xs);
+            color: var(--gray-600);
+            margin-bottom: var(--space-1);
+        }
+        
+        .kpi-trend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-1);
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+        }
+        
+        .kpi-trend.positive { color: var(--success-500); }
+        .kpi-trend.negative { color: var(--error-500); }
+        
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-1) var(--space-3);
+            border-radius: var(--rounded-full);
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+        }
+        
+        .status-indicator.running {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-500);
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.running { background: var(--success-500); }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Progress Bars */
+        .progress-bar-container {
+            margin-bottom: var(--space-3);
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-1);
+            font-size: var(--text-xs);
+            color: var(--gray-700);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: var(--rounded-full);
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+            border-radius: var(--rounded-full);
+            transition: width 1s ease-out;
+        }
+        
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: var(--space-4);
+        }
+        
+        .chart-container.large { height: 300px; }
+        .chart-container.small { height: 150px; }
+        
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            gap: var(--space-4);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+        
+        .filter-label {
+            font-size: var(--text-xs);
+            font-weight: var(--font-medium);
+            color: var(--gray-700);
+        }
+        
+        .filter-select {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--rounded-md);
+            font-size: var(--text-sm);
+            background: var(--white);
+            cursor: pointer;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .filter-select:hover { border-color: var(--primary-500); }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+        
+        /* Auto-refresh Toggle */
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: var(--gray-300);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+        
+        .toggle-switch.active { background: var(--primary-500); }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: var(--white);
+            border-radius: 50%;
+            transition: transform var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(20px);
+        }
+        
+        /* Interactive Panel */
+        .interactive-panel {
+            position: fixed;
+            top: var(--header-height);
+            right: -300px;
+            width: 280px;
+            height: calc(100vh - var(--header-height));
+            background: var(--white);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-6);
+            transition: right var(--transition-slow);
+            z-index: 100;
+            border-left: 1px solid var(--gray-200);
+            overflow-y: auto;
+        }
+        
+        .interactive-panel.active { right: 0; }
+        
+        .panel-close {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: none;
+            border: none;
+            font-size: var(--text-lg);
+            color: var(--gray-500);
+            cursor: pointer;
+        }
+        
+        .panel-close:hover { color: var(--gray-900); }
+        
+        /* Bottom Charts Grid */
+        .bottom-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-4);
+        }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: var(--space-6);
+            right: var(--space-6);
+            background: var(--primary-500);
+            color: var(--white);
+            border: none;
+            border-radius: var(--rounded-full);
+            width: 50px;
+            height: 50px;
+            font-size: var(--text-lg);
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal);
+            z-index: 1000;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        /* Environmental Theme Variables */
+        :root {
+            --env-primary: #10b981;
+            --env-secondary: #059669;
+            --env-accent: #34d399;
+            --env-blue: #0891b2;
+            --env-dark-green: #064e3b;
+            --env-light-green: #ecfdf5;
+            --env-forest: #166534;
+            --env-ocean: #0e7490;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-accent: #f0fdf4;
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(16, 185, 129, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--env-light-green) 100%);
+            color: var(--text-primary);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-icon {
+            color: var(--env-primary);
+        }
+
+        .nav-link.active {
+            color: var(--env-primary);
+        }
+
+        .nav-link.active::after {
+            background: var(--env-primary);
+        }
+
+        .nav-link:hover {
+            color: var(--env-secondary);
+        }
+
+        .dashboard-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .dashboard-card:hover {
+            border-color: var(--env-accent);
+            box-shadow: 0 10px 25px var(--shadow-color);
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, var(--env-primary), var(--env-accent));
+            color: white;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .flow-component {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .flow-component:hover {
+            background: var(--bg-accent);
+            border-color: var(--env-primary);
+            box-shadow: 0 8px 16px var(--shadow-color);
+        }
+
+        .filter-select {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .filter-select:focus {
+            border-color: var(--env-primary);
+            background: var(--bg-accent);
+        }
+
+        .details-panel {
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border-color);
+        }
+
+        .metric-item {
+            background: var(--bg-accent);
+            border: 1px solid var(--env-accent);
+        }
+
+        .theme-toggle {
+            background: var(--env-primary);
+            color: white;
+        }
+
+        .theme-toggle:hover {
+            background: var(--env-secondary);
+        }
+
+        /* Dark Theme Override for Architecture Page Consistency */
+        .dark-theme {
+            --white: #1a1a1a;
+            --gray-50: #2a2a2a;
+            --gray-100: #3a3a3a;
+            --gray-200: #4a4a4a;
+            --gray-300: #5a5a5a;
+            --gray-400: #6a6a6a;
+            --gray-500: #9ca3af;
+            --gray-600: #d1d5db;
+            --gray-700: #e5e7eb;
+            --gray-800: #f3f4f6;
+            --gray-900: #ffffff;
+            --primary-50: #1e3a3a;
+            --primary-100: #2a4a4a;
+            --primary-500: #10b981;
+            --primary-600: #059669;
+            --text-primary: #ffffff;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+        }
+        
+        .dark-theme body {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+        }
+        
+        .dark-theme .header {
+            background: rgba(15, 15, 15, 0.95);
+            border-bottom: 1px solid var(--gray-300);
+        }
+        
+        .dark-theme .dashboard-card {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .dark-theme .kpi-card {
+            background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+        }
+        
+        .dark-theme .flow-component {
+            background: var(--gray-100);
+            border: 2px solid var(--gray-300);
+            color: var(--text-primary);
+        }
+        
+        .dark-theme .flow-component:hover {
+            background: var(--gray-200);
+            border-color: var(--primary-500);
+        }
+        
+        .dark-theme .filter-select {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            color: var(--text-primary);
+        }
+        
+        .dark-theme .filter-select:focus {
+            border-color: var(--primary-500);
+            background: var(--gray-50);
+        }
+        
+        .dark-theme .details-panel {
+            background: var(--gray-50);
+            border-left: 1px solid var(--gray-200);
+        }
+        
+        .dark-theme .metric-item {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .dark-theme .theme-toggle {
+            background: var(--gray-700);
+            color: var(--gray-900);
+        }
+        
+        .dark-theme .theme-toggle:hover {
+            background: var(--gray-600);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-areas: 
+                    "header"
+                    "main-content"
+                    "sidebar-left"
+                    "sidebar-right"
+                    "bottom-charts";
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container { padding: var(--space-2); gap: var(--space-2); }
+            .dashboard-card { padding: var(--space-4); }
+            .filter-controls { flex-direction: column; align-items: stretch; }
+            .architecture-flow { flex-direction: column; gap: var(--space-4); }
+            .flow-arrow { transform: rotate(90deg); width: 15px; }
+            .bottom-charts { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="env-light-theme">
+    <!-- Header Navigation -->
+      <header class="header" id="header">
+        <nav class="navbar">
+            <a href="../genesis.html" class="logo">
+                <i class="fas fa-leaf logo-icon"></i>
+                <span>EPA Data System</span>
+            </a>
+            
+              <ul class="nav-menu" id="nav-menu">
+                  <li><a href="../genesis.html" class="nav-link">Project Overview</a></li>
+                <li><a href="architecture.html" class="nav-link">System Architecture</a></li>
+                <li><a href="dashboard.html" class="nav-link active">Interactive Dashboard</a></li>
+            </ul>
+            
+            <button class="nav-toggle" id="nav-toggle">
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+                <span class="nav-toggle-line"></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Page Content -->
+    <main class="page-content">
+        <div class="dashboard-container">
+            <!-- Dashboard Header with Filters -->
+            <div class="dashboard-header">
+                <div class="card-header">
+                    <div>
+                        <h1 class="card-title" style="font-size: var(--text-2xl);">EPA Environmental Data Dashboard</h1>
+                        <p style="font-size: var(--text-sm); color: var(--gray-600); margin: 0;">Real-time monitoring and analytics</p>
+                    </div>
+                    <div class="auto-refresh">
+                        <span style="font-size: var(--text-sm); color: var(--gray-600);">Auto-refresh</span>
+                        <div class="toggle-switch active" id="auto-refresh-toggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-controls">
+                    <div class="filter-group">
+                        <label class="filter-label">Time Range</label>
+                        <select class="filter-select" id="time-range-filter">
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d" selected>Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">Data Source</label>
+                        <select class="filter-select" id="data-source-filter">
+                            <option value="all" selected>All Sources</option>
+                            <option value="echo">ECHO Facilities</option>
+                            <option value="npdes">NPDES Data</option>
+                            <option value="air">Air Emissions</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">EPA Region</label>
+                        <select class="filter-select" id="region-filter">
+                            <option value="all" selected>All Regions</option>
+                            <option value="1">Region 1</option>
+                            <option value="2">Region 2</option>
+                            <option value="3">Region 3</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Left Sidebar - Processing Metrics -->
+            <div class="sidebar-left">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pipeline Status</h3>
+                        <span class="status-indicator running">
+                            <span class="status-dot running"></span>
+                            Running
+                        </span>
+                    </div>
+                    
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="records-processed">2,547,892</div>
+                            <div class="kpi-label">Records Today</div>
+                            <div class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+12.5%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-value" id="processing-speed">35,420</div>
+                            <div class="kpi-label">Records/Sec</div>
+                            <div class="kpi-trend positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+8.3%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>Memory Usage</span>
+                            <span>68%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 68%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>CPU Usage</span>
+                            <span>45%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Speed</h3>
+                    </div>
+                    <div class="chart-container small">
+                        <canvas id="speed-gauge-chart"></canvas>
+                        <div id="speed-gauge-fallback" style="display: none; text-align: center; padding: 2rem; color: var(--gray-500);">
+                            <i class="fas fa-chart-pie" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                            <p>Speed Gauge Chart</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary-500);">35,420 rec/sec</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Interactive Architecture -->
+            <div class="main-content dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Interactive System Architecture</h3>
+                    <p style="font-size: var(--text-sm); color: var(--gray-600); margin: 0;">Click components for details</p>
+                </div>
+                
+                <div class="architecture-flow">
+                    <div class="flow-component" data-component="sources" onclick="showComponentDetails('sources')">
+                        <div class="flow-component-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="flow-component-title">Sources</div>
+                        <div class="flow-component-status">4 Active</div>
+                    </div>
+                    
+                    <div class="flow-arrow animated"></div>
+                    
+                    <div class="flow-component" data-component="extract" onclick="showComponentDetails('extract')">
+                        <div class="flow-component-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="flow-component-title">Extract</div>
+                        <div class="flow-component-status">35.4K/sec</div>
+                    </div>
+                    
+                    <div class="flow-arrow animated"></div>
+                    
+                    <div class="flow-component" data-component="transform" onclick="showComponentDetails('transform')">
+                        <div class="flow-component-icon">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="flow-component-title">Transform</div>
+                        <div class="flow-component-status">42% ↓</div>
+                    </div>
+                    
+                    <div class="flow-arrow animated"></div>
+                    
+                    <div class="flow-component" data-component="load" onclick="showComponentDetails('load')">
+                        <div class="flow-component-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <div class="flow-component-title">Load</div>
+                        <div class="flow-component-status">UPSERT</div>
+                    </div>
+                    
+                    <div class="flow-arrow animated"></div>
+                    
+                    <div class="flow-component" data-component="qaqc" onclick="showComponentDetails('qaqc')">
+                        <div class="flow-component-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="flow-component-title">QA/QC</div>
+                        <div class="flow-component-status">95%</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container large">
+                    <canvas id="throughput-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Quality Metrics -->
+            <div class="sidebar-right">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Quality</h3>
+                        <span class="status-indicator running">
+                            <span class="status-dot running"></span>
+                            95%
+                        </span>
+                    </div>
+                    
+                    <div class="chart-container small">
+                        <canvas id="quality-score-chart"></canvas>
+                    </div>
+                    
+                    <div style="margin-top: var(--space-4);">
+                        <div class="progress-bar-container">
+                            <div class="progress-label">
+                                <span>Completeness</span>
+                                <span>98.5%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 98.5%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-bar-container">
+                            <div class="progress-label">
+                                <span>Accuracy</span>
+                                <span>96.2%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 96.2%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Error Trends</h3>
+                    </div>
+                    <div class="chart-container small">
+                        <canvas id="error-trends-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Charts -->
+            <div class="bottom-charts">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Performance Trends</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Geographic Distribution</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="geographic-chart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Data Source Breakdown</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="data-source-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Interactive Panel -->
+    <div class="interactive-panel" id="details-panel">
+        <button class="panel-close" onclick="hideComponentDetails()">
+            <i class="fas fa-times"></i>
+        </button>
+        <div id="panel-content">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // Global variables
+        let charts = {};
+        let isDarkTheme = false;
+        let autoRefreshEnabled = true;
+        let refreshInterval;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
+            console.log('Chart.js version:', Chart.version);
+            
+            initializeNavigation();
+            
+            // Add a small delay to ensure DOM is fully ready
+            setTimeout(() => {
+                initializeCharts();
+                initializeFilters();
+                startAutoRefresh();
+                animateCounters();
+            }, 100);
+        });
+
+        // Navigation
+        function initializeNavigation() {
+            const header = document.getElementById('header');
+            const navToggle = document.getElementById('nav-toggle');
+            const navMenu = document.getElementById('nav-menu');
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 100) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    navToggle.classList.toggle('active');
+                    navMenu.classList.toggle('active');
+                });
+                
+                // Close mobile menu when clicking on links
+                navMenu.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', function() {
+                        navToggle.classList.remove('active');
+                        navMenu.classList.remove('active');
+                    });
+                });
+            }
+            
+            // Add mobile navigation styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .nav-toggle-line {
+                    background: var(--text-primary);
+                }
+                
+                @media (max-width: 768px) {
+                    .nav-menu {
+                        background: rgba(255, 255, 255, 0.98);
+                        border-top: 1px solid var(--border-color);
+                    }
+                    
+                    .dark-theme .nav-menu {
+                        background: rgba(15, 15, 15, 0.98);
+                        border-top: 1px solid var(--gray-300);
+                    }
+                    
+                    .dark-theme .nav-toggle-line {
+                        background: var(--text-primary);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            console.log('Initializing charts...');
+            
+            // Speed gauge
+            const speedCtx = document.getElementById('speed-gauge-chart');
+            if (speedCtx) {
+                try {
+                    console.log('Creating speed gauge chart');
+                    charts.speedGauge = new Chart(speedCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Current Speed', 'Max Capacity'],
+                            datasets: [{
+                                data: [35420, 64580],
+                                backgroundColor: ['#059669', '#e5e7eb'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '75%',
+                            plugins: { 
+                                legend: { display: false }, 
+                                tooltip: { enabled: true }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Failed to create speed gauge chart:', error);
+                    const fallback = document.getElementById('speed-gauge-fallback');
+                    if (fallback) {
+                        speedCtx.style.display = 'none';
+                        fallback.style.display = 'block';
+                    }
+                }
+            }
+
+            // Quality score
+            const qualityEl = document.getElementById('quality-score-chart');
+            if (qualityEl) {
+                console.log('Creating quality score chart');
+                charts.qualityScore = new Chart(qualityEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Quality Score', 'Room for Improvement'],
+                        datasets: [{
+                            data: [95, 5],
+                            backgroundColor: ['#10b981', '#fee2e2'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: { 
+                            legend: { display: false }, 
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+
+            // Throughput chart
+            const throughputEl = document.getElementById('throughput-chart');
+            if (throughputEl) {
+                console.log('Creating throughput chart');
+                charts.throughput = new Chart(throughputEl, {
+                    type: 'line',
+                    data: {
+                        labels: generateTimeLabels(24),
+                        datasets: [{
+                            label: 'Records/Hour',
+                            data: generateThroughputData(24),
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Records per Hour' }
+                            }
+                        },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+
+            // Error trends
+            const errorEl = document.getElementById('error-trends-chart');
+            if (errorEl) {
+                console.log('Creating error trends chart');
+                charts.errorTrends = new Chart(errorEl, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Error Rate %',
+                            data: [15.2, 12.8, 9.5, 5.8],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                max: 20,
+                                title: { display: true, text: 'Error Rate %' }
+                            }
+                        },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+
+            // Performance trends
+            const perfEl = document.getElementById('performance-chart');
+            if (perfEl) {
+                console.log('Creating performance chart');
+                charts.performance = new Chart(perfEl, {
+                    type: 'line',
+                    data: {
+                        labels: generateTimeLabels(30),
+                        datasets: [{
+                            label: 'Processing Time (min)',
+                            data: generatePerformanceData(30),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Processing Time (min)' }
+                            }
+                        },
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+
+            // Geographic chart
+            const geoEl = document.getElementById('geographic-chart');
+            if (geoEl) {
+                console.log('Creating geographic chart');
+                charts.geographic = new Chart(geoEl, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Region 1', 'Region 2', 'Region 3', 'Region 4', 'Region 5'],
+                        datasets: [{
+                            label: 'Compliant Facilities',
+                            data: [450, 380, 520, 670, 320],
+                            backgroundColor: '#10b981'
+                        }, {
+                            label: 'Non-Compliant Facilities',
+                            data: [50, 70, 45, 80, 35],
+                            backgroundColor: '#ef4444'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { 
+                            x: { stacked: true },
+                            y: { 
+                                stacked: true, 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Number of Facilities' }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: { enabled: true }
+                        }
+                    }
+                });
+            }
+
+            // Data source chart
+            const sourceEl = document.getElementById('data-source-chart');
+            if (sourceEl) {
+                console.log('Creating data source chart');
+                charts.dataSource = new Chart(sourceEl, {
+                    type: 'pie',
+                    data: {
+                        labels: ['ECHO Facilities', 'NPDES Data', 'Air Emissions', 'ICIS Permits'],
+                        datasets: [{
+                            data: [35, 28, 22, 15],
+                            backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#8b5cf6'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                display: true,
+                                position: 'bottom'
+                            },
+                            tooltip: { 
+                                enabled: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            console.log('All charts initialized');
+        }
+
+        // Generate mock data
+        function generateTimeLabels(hours) {
+            const labels = [];
+            const now = new Date();
+            for (let i = hours - 1; i >= 0; i--) {
+                const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+                labels.push(time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+            }
+            return labels;
+        }
+
+        function generateThroughputData(points) {
+            const data = [];
+            for (let i = 0; i < points; i++) {
+                data.push(Math.floor(Math.random() * 10000) + 30000);
+            }
+            return data;
+        }
+
+        function generatePerformanceData(points) {
+            const data = [];
+            let base = 45;
+            for (let i = 0; i < points; i++) {
+                base += (Math.random() - 0.5) * 5;
+                base = Math.max(20, Math.min(60, base));
+                data.push(Math.round(base));
+            }
+            return data;
+        }
+
+        // Component details
+        function showComponentDetails(component) {
+            console.log('Showing component details for:', component);
+            const panel = document.getElementById('details-panel');
+            const content = document.getElementById('panel-content');
+            
+            if (!panel || !content) {
+                console.error('Panel or content element not found');
+                return;
+            }
+            
+            document.querySelectorAll('.flow-component').forEach(c => c.classList.remove('active'));
+            const activeComponent = document.querySelector(`[data-component="${component}"]`);
+            if (activeComponent) {
+                activeComponent.classList.add('active');
+            }
+            
+            const componentData = {
+                sources: {
+                    title: 'EPA Data Sources',
+                    metrics: [
+                        { label: 'Active Sources', value: '4' },
+                        { label: 'Total Records', value: '2.5M+' },
+                        { label: 'Data Size', value: '3.6GB' }
+                    ]
+                },
+                extract: {
+                    title: 'Extract Process',
+                    metrics: [
+                        { label: 'Processing Speed', value: '35.4K/sec' },
+                        { label: 'Memory Usage', value: '68%' },
+                        { label: 'Success Rate', value: '99.8%' }
+                    ]
+                },
+                transform: {
+                    title: 'Transform Process',
+                    metrics: [
+                        { label: 'Error Reduction', value: '42%' },
+                        { label: 'Cleaning Rules', value: '25+' },
+                        { label: 'Quality Score', value: '95%' }
+                    ]
+                },
+                load: {
+                    title: 'Load Process',
+                    metrics: [
+                        { label: 'Insert Rate', value: '50K/min' },
+                        { label: 'Operation', value: 'UPSERT' },
+                        { label: 'Success Rate', value: '99.8%' }
+                    ]
+                },
+                qaqc: {
+                    title: 'QA/QC Engine',
+                    metrics: [
+                        { label: 'Quality Score', value: '95%' },
+                        { label: 'Validation Rules', value: '25+' },
+                        { label: 'Detection', value: 'Real-time' }
+                    ]
+                }
+            };
+            
+            const data = componentData[component];
+            content.innerHTML = `
+                <h3 style="margin-bottom: var(--space-4); color: var(--primary-500);">${data.title}</h3>
+                <div>
+                    ${data.metrics.map(metric => `
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-200);">
+                            <span style="color: var(--gray-600);">${metric.label}</span>
+                            <strong style="color: var(--gray-900);">${metric.value}</strong>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            panel.classList.add('active');
+        }
+
+        function hideComponentDetails() {
+            document.getElementById('details-panel').classList.remove('active');
+            document.querySelectorAll('.flow-component').forEach(c => c.classList.remove('active'));
+        }
+
+        // Filters
+        function initializeFilters() {
+            const filters = ['time-range-filter', 'data-source-filter', 'region-filter'];
+            filters.forEach(filterId => {
+                const filterElement = document.getElementById(filterId);
+                if (filterElement) {
+                    filterElement.addEventListener('change', function() {
+                        console.log(`Filter changed: ${filterId} = ${this.value}`);
+                        applyFilters();
+                    });
+                }
+            });
+        }
+
+        function applyFilters() {
+            const timeRange = document.getElementById('time-range-filter').value;
+            const dataSource = document.getElementById('data-source-filter').value;
+            const region = document.getElementById('region-filter').value;
+            
+            console.log('Applying filters:', { timeRange, dataSource, region });
+            
+            // Update KPI values based on filters
+            updateKPIValues(dataSource, region);
+            
+            // Update charts based on filters
+            updateChartsWithFilters(timeRange, dataSource, region);
+            
+            // Show notification
+            showFilterNotification(timeRange, dataSource, region);
+        }
+        
+        function updateKPIValues(dataSource, region) {
+            const recordsEl = document.getElementById('records-processed');
+            const speedEl = document.getElementById('processing-speed');
+            
+            // Simulate different values based on filters
+            let recordsMultiplier = 1.0;
+            let speedMultiplier = 1.0;
+            
+            // Data source effects
+            switch(dataSource) {
+                case 'echo':
+                    recordsMultiplier = 0.4; // ECHO is 40% of total
+                    speedMultiplier = 1.1;
+                    break;
+                case 'npdes':
+                    recordsMultiplier = 0.3; // NPDES is 30% of total
+                    speedMultiplier = 0.9;
+                    break;
+                case 'air':
+                    recordsMultiplier = 0.2; // Air is 20% of total
+                    speedMultiplier = 1.2;
+                    break;
+                case 'all':
+                default:
+                    recordsMultiplier = 1.0;
+                    speedMultiplier = 1.0;
+            }
+            
+            // Region effects
+            if (region !== 'all') {
+                recordsMultiplier *= 0.2; // Each region is ~20% of total
+            }
+            
+            // Update values with animation
+            if (recordsEl) {
+                const baseRecords = 2547892;
+                const newRecords = Math.floor(baseRecords * recordsMultiplier);
+                animateValue(recordsEl, parseInt(recordsEl.textContent.replace(/,/g, '')), newRecords);
+            }
+            
+            if (speedEl) {
+                const baseSpeed = 35420;
+                const newSpeed = Math.floor(baseSpeed * speedMultiplier);
+                animateValue(speedEl, parseInt(speedEl.textContent.replace(/,/g, '')), newSpeed);
+            }
+        }
+        
+        function animateValue(element, start, end) {
+            const duration = 1000; // 1 second
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(start + (end - start) * progress);
+                element.textContent = current.toLocaleString();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        function updateChartsWithFilters(timeRange, dataSource, region) {
+            // Update throughput chart based on time range
+            if (charts.throughput) {
+                let points = 24;
+                switch(timeRange) {
+                    case '7d': points = 7; break;
+                    case '30d': points = 30; break;
+                    case '24h': 
+                    default: points = 24; break;
+                }
+                
+                charts.throughput.data.labels = generateTimeLabels(points);
+                charts.throughput.data.datasets[0].data = generateThroughputData(points);
+                charts.throughput.update('active');
+            }
+            
+            // Update geographic chart based on region filter
+            if (charts.geographic && region !== 'all') {
+                const regionIndex = parseInt(region) - 1;
+                const newData = [0, 0, 0, 0, 0];
+                const newNonCompliantData = [0, 0, 0, 0, 0];
+                
+                // Show only selected region
+                newData[regionIndex] = [450, 380, 520, 670, 320][regionIndex];
+                newNonCompliantData[regionIndex] = [50, 70, 45, 80, 35][regionIndex];
+                
+                charts.geographic.data.datasets[0].data = newData;
+                charts.geographic.data.datasets[1].data = newNonCompliantData;
+                charts.geographic.update('active');
+            } else if (charts.geographic) {
+                // Show all regions
+                charts.geographic.data.datasets[0].data = [450, 380, 520, 670, 320];
+                charts.geographic.data.datasets[1].data = [50, 70, 45, 80, 35];
+                charts.geographic.update('active');
+            }
+            
+            // Update data source chart based on data source filter
+            if (charts.dataSource) {
+                if (dataSource !== 'all') {
+                    // Highlight selected source
+                    const sources = ['echo', 'npdes', 'air', 'icis'];
+                    const index = sources.indexOf(dataSource);
+                    const newData = [0, 0, 0, 0];
+                    const originalData = [35, 28, 22, 15];
+                    
+                    if (index !== -1) {
+                        newData[index] = originalData[index];
+                        charts.dataSource.data.datasets[0].data = newData;
+                    }
+                } else {
+                    // Show all sources
+                    charts.dataSource.data.datasets[0].data = [35, 28, 22, 15];
+                }
+                charts.dataSource.update('active');
+            }
+            
+            // Update performance chart with different data based on source
+            if (charts.performance) {
+                let multiplier = 1.0;
+                switch(dataSource) {
+                    case 'echo': multiplier = 0.8; break;
+                    case 'npdes': multiplier = 1.2; break;
+                    case 'air': multiplier = 0.9; break;
+                    case 'icis': multiplier = 1.1; break;
+                }
+                
+                const newData = generatePerformanceData(30).map(val => Math.round(val * multiplier));
+                charts.performance.data.datasets[0].data = newData;
+                charts.performance.update('active');
+            }
+        }
+        
+        function showFilterNotification(timeRange, dataSource, region) {
+            // Create a temporary notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: var(--primary-500);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-size: 0.9rem;
+                max-width: 300px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            const timeRangeText = timeRange === '24h' ? 'Last 24 Hours' : 
+                                 timeRange === '7d' ? 'Last 7 Days' : 'Last 30 Days';
+            const dataSourceText = dataSource === 'all' ? 'All Sources' :
+                                  dataSource === 'echo' ? 'ECHO Facilities' :
+                                  dataSource === 'npdes' ? 'NPDES Data' :
+                                  dataSource === 'air' ? 'Air Emissions' : 'ICIS Permits';
+            const regionText = region === 'all' ? 'All Regions' : `Region ${region}`;
+            
+            notification.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">
+                    <i class="fas fa-filter" style="margin-right: 0.5rem;"></i>
+                    Filters Applied
+                </div>
+                <div style="font-size: 0.8rem; line-height: 1.4;">
+                    <div>📅 ${timeRangeText}</div>
+                    <div>📊 ${dataSourceText}</div>
+                    <div>🗺️ ${regionText}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Auto-refresh
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                if (autoRefreshEnabled) {
+                    updateDashboardData();
+                }
+            }, 5000);
+        }
+
+        function updateDashboardData() {
+            const recordsEl = document.getElementById('records-processed');
+            const speedEl = document.getElementById('processing-speed');
+            
+            if (recordsEl) {
+                const currentValue = parseInt(recordsEl.textContent.replace(/,/g, ''));
+                const newValue = currentValue + Math.floor(Math.random() * 1000);
+                recordsEl.textContent = newValue.toLocaleString();
+            }
+            
+            if (speedEl) {
+                const newSpeed = Math.floor(Math.random() * 5000) + 32000;
+                speedEl.textContent = newSpeed.toLocaleString();
+            }
+        }
+
+        // Auto-refresh toggle
+        document.getElementById('auto-refresh-toggle').addEventListener('click', function() {
+            autoRefreshEnabled = !autoRefreshEnabled;
+            this.classList.toggle('active', autoRefreshEnabled);
+        });
+
+        // Theme toggle
+        function toggleTheme() {
+            console.log('Theme toggle clicked, current theme:', isDarkTheme ? 'dark' : 'light');
+            isDarkTheme = !isDarkTheme;
+            document.body.classList.toggle('dark-theme', isDarkTheme);
+            
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            if (themeIcon) {
+                themeIcon.className = isDarkTheme ? 'fas fa-sun' : 'fas fa-moon';
+            }
+            
+            // Add a brief animation to show the toggle worked
+            themeToggle.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                themeToggle.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Update charts if they exist (for dark theme compatibility)
+            if (Object.keys(charts).length > 0) {
+                updateChartsTheme();
+            }
+            
+            console.log('Theme switched to:', isDarkTheme ? 'dark' : 'light');
+        }
+        
+        function updateChartsTheme() {
+            // Update chart colors for dark theme
+            const textColor = isDarkTheme ? '#ffffff' : '#374151';
+            const gridColor = isDarkTheme ? '#4a4a4a' : '#e5e7eb';
+            
+            Object.values(charts).forEach(chart => {
+                if (chart && chart.options) {
+                    // Update text colors
+                    if (chart.options.scales) {
+                        Object.values(chart.options.scales).forEach(scale => {
+                            if (scale.title) scale.title.color = textColor;
+                            if (scale.ticks) scale.ticks.color = textColor;
+                            if (scale.grid) scale.grid.color = gridColor;
+                        });
+                    }
+                    
+                    // Update legend colors
+                    if (chart.options.plugins && chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels = {
+                            ...chart.options.plugins.legend.labels,
+                            color: textColor
+                        };
+                    }
+                    
+                    chart.update('none');
+                }
+            });
+        }
+
+        // Animate counters
+        function animateCounters() {
+            const counters = document.querySelectorAll('.kpi-value');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace(/,/g, ''));
+                let current = 0;
+                const increment = target / 100;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    counter.textContent = Math.floor(current).toLocaleString();
+                }, 20);
+            });
+        }
+    </script>
+</body>
+</html>

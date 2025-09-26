@@ -1,0 +1,372 @@
+/* 
+EPA Environmental Data Management System - Consistent Theme
+Unified environmental color scheme and styling patterns
+*/
+
+/* Environmental Color Variables - Used across all pages */
+:root {
+    /* Primary Environmental Colors */
+    --env-primary: #10b981;           /* Main EPA green */
+    --env-secondary: #059669;         /* Darker green */
+    --env-accent: #34d399;            /* Light green accent */
+    --env-blue: #0891b2;              /* Water/air theme */
+    --env-dark-green: #064e3b;        /* Deep forest */
+    --env-light-green: #ecfdf5;       /* Subtle background */
+    --env-forest: #166534;            /* Nature theme */
+    --env-ocean: #0e7490;             /* Environmental blue */
+    
+    /* Light Theme Colors */
+    --light-text-primary: #111827;
+    --light-text-secondary: #6b7280;
+    --light-text-muted: #9ca3af;
+    --light-bg-primary: #ffffff;
+    --light-bg-secondary: #f9fafb;
+    --light-bg-accent: #f0fdf4;
+    --light-border-color: #e5e7eb;
+    --light-shadow-color: rgba(16, 185, 129, 0.1);
+    
+    /* Dark Theme Colors */
+    --dark-bg-primary: #0f0f0f;
+    --dark-bg-secondary: #1a1a1a;
+    --dark-bg-tertiary: #252525;
+    --dark-bg-card: #1e1e1e;
+    --dark-text-primary: #ffffff;
+    --dark-text-secondary: #b3b3b3;
+    --dark-text-muted: #888888;
+    --dark-border-color: #333333;
+    --dark-shadow-color: rgba(0, 0, 0, 0.5);
+    
+    /* Environmental Gradients */
+    --env-gradient-primary: linear-gradient(135deg, var(--env-forest), var(--env-primary));
+    --env-gradient-accent: linear-gradient(135deg, var(--env-primary), var(--env-accent));
+    --env-gradient-blue: linear-gradient(135deg, var(--env-blue), var(--env-primary));
+    --env-gradient-light-bg: linear-gradient(135deg, var(--light-bg-primary) 0%, var(--env-light-green) 100%);
+    --env-gradient-dark-bg: linear-gradient(135deg, var(--dark-bg-primary) 0%, var(--dark-bg-secondary) 100%);
+}
+
+/* Light Theme Base Styles */
+.env-light-theme {
+    background: var(--env-gradient-light-bg);
+    color: var(--light-text-primary);
+}
+
+/* Consistent header/nav across pages */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-link {
+    position: relative;
+    text-decoration: none;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.5rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 1px;
+}
+
+.env-light-theme .header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--light-border-color);
+}
+
+.env-light-theme .logo-icon {
+    color: var(--env-primary);
+}
+
+.env-light-theme .nav-link {
+    color: var(--light-text-secondary);
+}
+
+.env-light-theme .nav-link:hover {
+    color: var(--env-secondary);
+}
+
+.env-light-theme .nav-link.active {
+    color: var(--env-primary);
+}
+
+.env-light-theme .nav-link.active::after {
+    background: var(--env-primary);
+}
+
+/* Dark Theme Base Styles */
+.env-dark-theme {
+    background: var(--env-gradient-dark-bg);
+    color: var(--dark-text-primary);
+}
+
+.env-dark-theme .header {
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--dark-border-color);
+}
+
+.env-dark-theme .logo-icon {
+    color: var(--env-primary);
+}
+
+.env-dark-theme .nav-link {
+    color: var(--dark-text-secondary);
+}
+
+.env-dark-theme .nav-link:hover {
+    color: var(--env-secondary);
+}
+
+.env-dark-theme .nav-link.active {
+    color: var(--env-primary);
+}
+
+.env-dark-theme .nav-link.active::after {
+    background: var(--env-primary);
+}
+
+/* Environmental Card Styles */
+.env-card {
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.env-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--env-gradient-blue);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.env-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Light Theme Cards */
+.env-light-theme .env-card {
+    background: var(--light-bg-primary);
+    border: 2px solid var(--light-border-color);
+    box-shadow: 0 4px 6px var(--light-shadow-color);
+}
+
+.env-light-theme .env-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--env-primary);
+    box-shadow: 0 20px 40px var(--light-shadow-color);
+}
+
+/* Dark Theme Cards */
+.env-dark-theme .env-card {
+    background: var(--dark-bg-card);
+    border: 2px solid var(--dark-border-color);
+    box-shadow: 0 20px 40px var(--dark-shadow-color);
+}
+
+.env-dark-theme .env-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--env-primary);
+    box-shadow: 0 25px 50px var(--dark-shadow-color);
+}
+
+/* Environmental Icons */
+.env-icon {
+    color: var(--env-blue);
+    transition: color 0.3s ease;
+}
+
+.env-card:hover .env-icon {
+    color: var(--env-primary);
+}
+
+/* Environmental Buttons */
+.env-btn-primary {
+    background: var(--env-gradient-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.env-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.env-btn-secondary {
+    background: transparent;
+    color: var(--env-primary);
+    border: 2px solid var(--env-primary);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.env-btn-secondary:hover {
+    background: var(--env-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Environmental Metrics */
+.env-metric {
+    background: var(--env-gradient-accent);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.env-metric:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+}
+
+.env-metric-value {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.env-metric-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Environmental Form Elements */
+.env-input, .env-select {
+    border: 1px solid var(--light-border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: var(--light-bg-primary);
+    color: var(--light-text-primary);
+    transition: all 0.3s ease;
+}
+
+.env-input:focus, .env-select:focus {
+    border-color: var(--env-primary);
+    background: var(--light-bg-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.env-dark-theme .env-input, .env-dark-theme .env-select {
+    border-color: var(--dark-border-color);
+    background: var(--dark-bg-card);
+    color: var(--dark-text-primary);
+}
+
+.env-dark-theme .env-input:focus, .env-dark-theme .env-select:focus {
+    border-color: var(--env-primary);
+    background: var(--dark-bg-tertiary);
+}
+
+/* Environmental Status Indicators */
+.env-status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--env-primary);
+    margin-right: 0.5rem;
+    animation: env-pulse 2s infinite;
+}
+
+@keyframes env-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Environmental Typography */
+.env-title {
+    background: var(--env-gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+.env-subtitle {
+    color: var(--light-text-secondary);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.env-dark-theme .env-subtitle {
+    color: var(--dark-text-secondary);
+}
+
+/* Mobile Responsive */
+.nav-toggle-line {
+    background: var(--light-text-primary);
+    width: 25px;
+    height: 3px;
+    margin: 3px 0;
+    transition: 0.3s;
+    border-radius: 2px;
+}
+
+.env-dark-theme .nav-toggle-line {
+    background: var(--dark-text-primary);
+}
+
+@media (max-width: 768px) {
+    .nav-menu {
+        background: rgba(255, 255, 255, 0.98);
+        border-top: 1px solid var(--light-border-color);
+    }
+    
+    .env-dark-theme .nav-menu {
+        background: rgba(15, 15, 15, 0.98);
+        border-top: 1px solid var(--dark-border-color);
+    }
+    
+    .env-card {
+        padding: 1.5rem;
+    }
+    
+    .env-metric {
+        padding: 1.5rem;
+    }
+    
+    .env-metric-value {
+        font-size: 2rem;
+    }
+}
